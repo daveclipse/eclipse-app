@@ -12,7 +12,7 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
 
   return (
     <ThemedView>
-      <Text className="text-blue-500">
+      <Text className="text-red-500">
         This text is red on web and in the native app.
       </Text>
       <TouchableOpacity
