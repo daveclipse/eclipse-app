@@ -8,11 +8,12 @@ import Login from '@/screens/Login';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '.';
+import Profile from '@/screens/Profile';
 
 
 
-export default function LoginScreen() {
+export default function ProfileScreen() {
   return (
-    <Login app={app}></Login>
+    <Profile></Profile>
   );
 }

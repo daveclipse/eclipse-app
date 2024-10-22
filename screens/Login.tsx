@@ -1,17 +1,38 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, Animated, TextInput } from 'react-native';
 import 'nativewind';
-import firebaseConfig from '@/firebase.config.js';
 import { FirebaseApp, initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, Auth } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, Auth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getAnalytics } from "firebase/analytics";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
-export default function Login() {
+export default function Login({ app }: { app: FirebaseApp }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignInOpen, setIsSignInOpen] = useState(false);
 
+  const [auth, setAuth] = useState<Auth | null>(null);
+
+  const navigation = useNavigation<any>();
+
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const authInstance = getAuth(app);
+      setAuth(authInstance);
+    };
+
+    initializeAuth();
+  }, [app]);
+  
+  const provider = new GoogleAuthProvider();
+
   const slideAnim = useRef(new Animated.Value(1)).current;  // Create an Animated value
+
+  const routeSignIn = () => {
+    navigation.navigate('home');
+  };
 
   useEffect(() => {
     if (isSignInOpen) {
@@ -30,28 +51,56 @@ export default function Login() {
   }, [isSignInOpen]);
 
   const handleSignIn = async () => {
-  
-    try {
-      const app: FirebaseApp  = initializeApp(firebaseConfig);
-      const auth: Auth = getAuth(app);
+    if (auth) {
+      try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('User signed in!');
+      console.log(userCredential);
     } catch (error: any) {
       const errorCode = error.code;
       const errorMessage = error.message;
       console.error(errorCode, errorMessage);
     }
+    }
+    
   };
 
   const handleSignUp = async () => {
-    try {
-      const app: FirebaseApp  = initializeApp(firebaseConfig);
-      const auth: Auth = getAuth(app);
+    if (auth) {
+      try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log('User created!');
     } catch (error: any) {
       const errorCode = error.code;
       const errorMessage = error.message;
+      console.error(errorCode, errorMessage);
+    }
+    }
+    
+  };
+
+  const handleGoogleSignIn = async () => {
+    const auth = getAuth(); // Assuming you have initialized auth elsewhere
+    const provider = new GoogleAuthProvider();
+  
+    try {
+      const result = await signInWithPopup(auth, provider);
+  
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential ? credential.accessToken : null;
+  
+      // The signed-in user info.
+      const user = result.user;
+      console.log(user);
+
+    } catch (error: any) {
+      // Handle Errors here.
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      // The email of the user's account used.
+      const email = error.email;
+      // The AuthCredential type that was used.
+      const credential = GoogleAuthProvider.credentialFromError(error);
       console.error(errorCode, errorMessage);
     }
   };
@@ -63,6 +112,7 @@ export default function Login() {
   const slideStyle = {
     transform: [{ translateX: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }],
     display: !isSignInOpen ? 'flex' as 'flex' : 'none' as 'none',
+    visibility: !isSignInOpen ? 'visible' as 'visible' : 'hidden' as 'hidden',
   };
 
   const inputSlide = {
@@ -71,13 +121,19 @@ export default function Login() {
   };
 
   return (
+    
     <View className="flex-1 items-center justify-center bg-white px-4">
-      <View className='flex items-center w-full h-1/2 justify-center'>
-        <Image source={require('@/assets/images/eclipseLogo.png')} className="items-center obejct-fit" />
+      <View className='flex fixed items-center w-full h-1/3 justify-center'>
+        <Image source={require('@/assets/images/eclipseLogo.png')} className="items-center " />
       </View>
+     {isSignInOpen && <TouchableOpacity onPress={toggleSignIn} className="absolute top-12 left-4">
+        <Ionicons name="chevron-back" size={24} color="black" />
+      </TouchableOpacity>}
+      <Animated.View style={slideStyle} className="w-full">
         <TouchableOpacity className="bg-black rounded-lg w-full py-4 mb-4">
         <Text className="text-white text-center text-lg font-semibold" onPress={toggleSignIn}>Sign In</Text>
       </TouchableOpacity>
+      </Animated.View>
 
       <Animated.View style={slideStyle} className="w-full">
         <TouchableOpacity className="bg-eclipseYellow rounded-lg w-full py-4 mb-6">
@@ -92,7 +148,7 @@ export default function Login() {
 
       <Animated.View style={slideStyle}>
         <View className="flex-row space-x-4">
-          <TouchableOpacity className="bg-gray-100 p-4 rounded-lg">
+          <TouchableOpacity className="bg-gray-100 p-4 rounded-lg" onPress={handleGoogleSignIn}>
             <Image source={{ uri: 'https://img.icons8.com/color/48/000000/google-logo.png' }} style={{ width: 30, height: 30 }} />
           </TouchableOpacity>
 
@@ -108,7 +164,8 @@ export default function Login() {
 
       {isSignInOpen && (
         <>
-          <Animated.View style={inputSlide} className="w-full mt-9">
+        <Animated.View className='w-full'>
+        <Animated.View style={inputSlide} className="w-full">
             <Text className="text-gray-700 text-base mb-2">Email</Text>
             <TextInput
               className="border border-gray-300 rounded-lg w-full px-3 py-2"
@@ -126,6 +183,12 @@ export default function Login() {
               secureTextEntry
             />
           </Animated.View>
+          <Animated.View style={inputSlide} className="mt-4 w-full">
+            <TouchableOpacity onPress={handleSignIn} className="bg-black rounded-lg w-full py-4">
+              <Text onPress={routeSignIn} className="text-white text-center text-lg font-semibold">Sign In</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </Animated.View>
         </>
       )}
     </View>
