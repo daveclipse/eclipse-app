@@ -28,7 +28,7 @@ export default function Login({ app }: { app: FirebaseApp }) {
   
   const provider = new GoogleAuthProvider();
 
-  const slideAnim = useRef(new Animated.Value(1)).current;  // Create an Animated value
+  const slideAnim = useRef(new Animated.Value(1)).current;
 
   const routeSignIn = () => {
     navigation.navigate('home');
@@ -39,7 +39,7 @@ export default function Login({ app }: { app: FirebaseApp }) {
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: true,  // Improves performance for animations
+        useNativeDriver: true,
       }).start();
     } else {
       Animated.timing(slideAnim, {
