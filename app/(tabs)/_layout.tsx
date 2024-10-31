@@ -38,6 +38,25 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="preferences"
+        options={{
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="register"
+        options={{
+          tabBarButton: () => null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
     </Tabs>
   );
 }

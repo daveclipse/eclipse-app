@@ -11,11 +11,11 @@ export default function Login({ app }: { app: FirebaseApp }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
   const [auth, setAuth] = useState<Auth | null>(null);
 
   const navigation = useNavigation<any>();
-
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -25,17 +25,21 @@ export default function Login({ app }: { app: FirebaseApp }) {
 
     initializeAuth();
   }, [app]);
-  
+
   const provider = new GoogleAuthProvider();
 
-  const slideAnim = useRef(new Animated.Value(1)).current;  // Create an Animated value
+  const slideAnim = useRef(new Animated.Value(1)).current;
 
   const routeSignIn = () => {
     navigation.navigate('home');
   };
 
+  const routeRegister = () => {
+    navigation.navigate('register');
+  }
+
   useEffect(() => {
-    if (isSignInOpen) {
+    if (isSignInOpen || isRegisterOpen) {
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 300,
@@ -48,47 +52,45 @@ export default function Login({ app }: { app: FirebaseApp }) {
         useNativeDriver: true,
       }).start();
     }
-  }, [isSignInOpen]);
+  }, [isSignInOpen, isRegisterOpen]);
 
   const handleSignIn = async () => {
     if (auth) {
       try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log(userCredential);
-    } catch (error: any) {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.error(errorCode, errorMessage);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log(userCredential);
+      } catch (error: any) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error(errorCode, errorMessage);
+      }
     }
-    }
-    
   };
 
-  const handleSignUp = async () => {
+  const handleRegister = async () => {
     if (auth) {
       try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('User created!');
-    } catch (error: any) {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.error(errorCode, errorMessage);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        console.log('User created!');
+      } catch (error: any) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error(errorCode, errorMessage);
+      }
     }
-    }
-    
   };
 
   const handleGoogleSignIn = async () => {
     const auth = getAuth(); // Assuming you have initialized auth elsewhere
     const provider = new GoogleAuthProvider();
-  
+
     try {
       const result = await signInWithPopup(auth, provider);
-  
+
       // This gives you a Google Access Token. You can use it to access the Google API.
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const token = credential ? credential.accessToken : null;
-  
+
       // The signed-in user info.
       const user = result.user;
       console.log(user);
@@ -107,40 +109,46 @@ export default function Login({ app }: { app: FirebaseApp }) {
 
   const toggleSignIn = () => {
     setIsSignInOpen(!isSignInOpen);
+    setIsRegisterOpen(false);
   };
+
+  const toggleRegister = () => {
+    setIsRegisterOpen(!isRegisterOpen);
+    setIsSignInOpen(false);
+  }
 
   const slideStyle = {
     transform: [{ translateX: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [500, 0] }) }],
-    display: !isSignInOpen ? 'flex' as 'flex' : 'none' as 'none',
-    visibility: !isSignInOpen ? 'visible' as 'visible' : 'hidden' as 'hidden',
+    display: !isSignInOpen || !isRegisterOpen ? 'flex' as 'flex' : 'none' as 'none',
+    visibility: !isSignInOpen || !isRegisterOpen ? 'visible' as 'visible' : 'hidden' as 'hidden',
   };
-
+  
   const inputSlide = {
     transform: [{ translateX: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -500] }) }],
-    display: isSignInOpen ? 'flex' as 'flex' : 'none' as 'none',
+    display: (isSignInOpen || isRegisterOpen) ? 'flex' as 'flex' : 'none' as 'none',
   };
 
   return (
-    
     <View className="flex-1 items-center justify-center bg-white px-4">
       <View className='flex fixed items-center w-full h-1/3 justify-center'>
         <Image source={require('@/assets/images/eclipseLogo.png')} className="items-center " />
       </View>
-     {isSignInOpen && <TouchableOpacity onPress={toggleSignIn} className="absolute top-12 left-4">
+      {isSignInOpen && <TouchableOpacity onPress={toggleSignIn} className="absolute top-12 left-4">
         <Ionicons name="chevron-back" size={24} color="black" />
       </TouchableOpacity>}
       <Animated.View style={slideStyle} className="w-full">
-        <TouchableOpacity className="bg-black rounded-lg w-full py-4 mb-4">
-        <Text className="text-white text-center text-lg font-semibold" onPress={toggleSignIn}>Sign In</Text>
-      </TouchableOpacity>
+        <TouchableOpacity className="bg-black rounded-lg w-full py-4 mb-4" onPress={toggleSignIn}>
+          <Text className="text-white text-center text-lg font-semibold">Sign In</Text>
+        </TouchableOpacity>
       </Animated.View>
-
+      {isRegisterOpen && <TouchableOpacity onPress={toggleRegister} className="absolute top-12 left-4">
+        <Ionicons name="chevron-back" size={24} color="black" />
+      </TouchableOpacity>}
       <Animated.View style={slideStyle} className="w-full">
-        <TouchableOpacity className="bg-eclipseYellow rounded-lg w-full py-4 mb-6">
+        <TouchableOpacity className="bg-eclipseYellow rounded-lg w-full py-4 mb-6" onPress={toggleRegister}>
           <Text className="text-black text-center text-lg font-semibold">Register</Text>
         </TouchableOpacity>
       </Animated.View>
-      
 
       <Animated.View style={slideStyle} className="flex-row items-center justify-center mb-6">
         <View className="border-b border-gray-200 flex-grow" /><Text className="mx-2 text-gray-400">Or continue with</Text><View className="border-b border-gray-200 flex-grow" />
@@ -162,35 +170,67 @@ export default function Login({ app }: { app: FirebaseApp }) {
         </View>
       </Animated.View>
 
-      {isSignInOpen && (
+      {(isSignInOpen) && (
         <>
-        <Animated.View className='w-full'>
-        <Animated.View style={inputSlide} className="w-full">
-            <Text className="text-gray-700 text-base mb-2">Email</Text>
-            <TextInput
-              className="border border-gray-300 rounded-lg w-full px-3 py-2"
-              value={email}
-              onChangeText={setEmail}
-            />
-          </Animated.View>
+          <Animated.View className='w-full'>
+            <Animated.View style={inputSlide} className="w-full">
+              <Text className="text-gray-700 text-base mb-2">Email</Text>
+              <TextInput
+                className="border border-gray-300 rounded-lg w-full px-3 py-2"
+                value={email}
+                onChangeText={setEmail}
+              />
+            </Animated.View>
 
-          <Animated.View style={inputSlide} className="mt-4 w-full">
-            <Text className="text-gray-700 text-base mb-2">Password</Text>
-            <TextInput
-              className="border border-gray-300 rounded-lg w-full px-3 py-2"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+            <Animated.View style={inputSlide} className="mt-4 w-full">
+              <Text className="text-gray-700 text-base mb-2">Password</Text>
+              <TextInput
+                className="border border-gray-300 rounded-lg w-full px-3 py-2"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </Animated.View>
+            <Animated.View style={inputSlide} className="mt-4 w-full">
+              <TouchableOpacity onPress={handleSignIn} className="bg-black rounded-lg w-full py-4">
+                <Text onPress={routeSignIn} className="text-white text-center text-lg font-semibold">Sign In</Text>
+              </TouchableOpacity>
+            </Animated.View>
           </Animated.View>
-          <Animated.View style={inputSlide} className="mt-4 w-full">
-            <TouchableOpacity onPress={handleSignIn} className="bg-black rounded-lg w-full py-4">
-              <Text onPress={routeSignIn} className="text-white text-center text-lg font-semibold">Sign In</Text>
-            </TouchableOpacity>
+        </>
+      )}
+
+      {(isRegisterOpen) && (
+        <>
+          <Animated.View className='w-full'>
+            <Animated.View style={inputSlide} className="w-full">
+              <Text className="text-gray-700 text-base mb-2">Email</Text>
+              <TextInput
+                className="border border-gray-300 rounded-lg w-full px-3 py-2"
+                value={email}
+                onChangeText={setEmail}
+              />
+            </Animated.View>
+
+            <Animated.View style={inputSlide} className="mt-4 w-full">
+              <Text className="text-gray-700 text-base mb-2">Password</Text>
+              <TextInput
+                className="border border-gray-300 rounded-lg w-full px-3 py-2"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </Animated.View>
+
+            <Animated.View style={inputSlide} className="mt-4 w-full">
+              <TouchableOpacity onPress={routeRegister} className="bg-eclipseYellow rounded-lg w-full py-4">
+                <Text className="text-black text-center text-lg font-semibold">Register</Text>
+              </TouchableOpacity>
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
         </>
       )}
     </View>
   );
 }
+
