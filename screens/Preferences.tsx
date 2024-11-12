@@ -11,10 +11,14 @@ const Profile = () => {
   const [otherGender, setOtherGender] = useState('');
   const [isPickerVisible, setIsPickerVisible] = useState(false);
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const handleOpenPicker = () => setIsPickerVisible(true);
   const handleClosePicker = () => setIsPickerVisible(false);
+
+  const routeProfileSetup = () => {
+    navigation.navigate('profileSetup');
+  };
 
   const handleBack = () => {
     navigation.goBack();
@@ -84,6 +88,9 @@ const Profile = () => {
             </View>
           </View>
         </Modal>
+        <TouchableOpacity onPress={routeProfileSetup} className="bg-black rounded-lg w-full py-4">
+        <Text className="text-white text-center text-lg font-semibold">Next</Text>
+      </TouchableOpacity>
       </View>
     </View>
   );
