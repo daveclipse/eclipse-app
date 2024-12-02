@@ -9,8 +9,7 @@ type ImageCarouselProps = {
 
 const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  const handleScroll = (event: any) => {
+  images = [require('../assets/images/paris.jpg')];  const handleScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const newIndex = Math.round(contentOffsetX / width);
     setCurrentIndex(newIndex);
@@ -26,7 +25,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
         onScroll={handleScroll}
         scrollEventThrottle={16} // Ensures smooth tracking of scroll position
         renderItem={({ item }) => (
-          <Image source={{ uri: item }} className="w-full h-full rounded-lg" />
+          <Image source={require('@/assets/images/paris.jpg')} className="w-full h-full rounded-lg" />
         )}
         keyExtractor={(item, index) => index.toString()}
       />

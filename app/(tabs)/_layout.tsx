@@ -42,6 +42,7 @@ export default function TabLayout() {
         name="preferences"
         options={{
           tabBarStyle: { display: 'none' },
+          tabBarButton: () => null,
         }}
       />
       <Tabs.Screen

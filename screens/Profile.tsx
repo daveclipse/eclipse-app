@@ -1,16 +1,47 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, SafeAreaView, TouchableOpacity, Image } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Import Icon component
 import ImageCarousel from '@/components/ImageCarousel';
 import ProfilePopover from '@/components/ProfilePopover';
 import ProfileSquare from '@/components/ProfileSquare';
 import Animated, { useSharedValue } from 'react-native-reanimated';
+import VitalTile from '@/components/VitalTile';
+import { profile } from 'console';
+import { useRoute } from '@react-navigation/native';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 type Props = {};
 
 const Profile = (props: Props) => {
+  const route = useRoute();
+  const { userId } = route.params as { userId: string };
   const [isPopoverVisible, setIsPopoverVisible] = useState(false);
+  const [profileInfo, setProfileInfo] = useState<any>(null);
+
+  useEffect(() => {
+    if (userId) {
+      const fetchUserData = async () => {
+        try {
+          const firestore = getFirestore();
+          const userDocRef = doc(firestore, 'users', userId);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            console.log(userDoc.data());
+            setProfileInfo(userDoc.data());
+          } else {
+            console.log('User not found');
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      };
+
+      fetchUserData();
+    }
+  }, [userId]);
+
+
   const [squares, setSquares] = useState(
     Array.from({ length: 6 }).map((_, index) => ({
       id: index,
@@ -23,13 +54,6 @@ const Profile = (props: Props) => {
     Array.from({ length: 6 }).map(() => ({ x: useSharedValue(0), y: useSharedValue(0) }))
   );
 
-  const profileInfo = {
-    name: 'John Doe',
-    age: 25,
-    location: 'San Francisco, CA',
-    gender: 'Male',
-    icon: <Icon name="user" size={20} color="#000" />, // Profile icon
-  };
 
   const validPositions = [
     { x: 0, y: 4 },
@@ -82,11 +106,12 @@ const Profile = (props: Props) => {
             </View>
           </ProfilePopover>
 
-          <View style={{ aspectRatio: 1, width: '95%' }}>
-            <ImageCarousel images={['../assets/images/bird.jpg', '../assets/images/paris.jpg']}/>
+          <View className='aspect-square rounded w-[95%]'>
+            {/* <ImageCarousel images={['../assets/images/bird.jpg', '../assets/images/paris.jpg']}/> */}
+            <Image source={require('../assets/images/bird.jpg')} className='rounded w-full h-full' />
           </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 8, width: '95%' }}>
-            {squares.map((square, index) => (
+          <View /*style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 8, width: '95%' }} */>
+            {/* {squares.map((square, index) => (
               <ProfileSquare
                 key={square.id}
                 index={index}
@@ -95,11 +120,9 @@ const Profile = (props: Props) => {
                 onLayout={handleLayout(index)}
                 profileInfo={profileInfo}
               />
-            ))}
+            ))} */}
           </View>
-          <TouchableOpacity style={{ marginTop: 20 }} onPress={addSquare}>
-            <Text style={{ fontSize: 18, color: '#007bff' }}>Add Square</Text>
-          </TouchableOpacity>
+          {profileInfo && <VitalTile profileInfo={profileInfo} /> }
         </ScrollView>
       </SafeAreaView>
     </GestureHandlerRootView>
