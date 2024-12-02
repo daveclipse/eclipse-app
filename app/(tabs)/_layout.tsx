@@ -10,7 +10,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      initialRouteName="home" // Set "index" as the initial route
+      initialRouteName="profile"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
@@ -42,6 +42,7 @@ export default function TabLayout() {
         name="preferences"
         options={{
           tabBarStyle: { display: 'none' },
+          tabBarButton: () => null,
         }}
       />
       <Tabs.Screen
@@ -52,6 +53,13 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="register"
+        options={{
+          tabBarButton: () => null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="profileSetup"
         options={{
           tabBarButton: () => null,
           tabBarStyle: { display: 'none' },
